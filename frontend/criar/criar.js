@@ -4,7 +4,7 @@ $("#form-criar").on("submit", function (e) {
   e.preventDefault();
 
   if (!$("#titulo").val() || !$("#descricao").val()) {
-    alert("Preencha TUDO!");
+    alert("Preencha todos os campos!");
     return;
   }
 
