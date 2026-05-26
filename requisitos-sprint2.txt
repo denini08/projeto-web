@@ -1,0 +1,228 @@
+================================================================
+  PROJETO WEB — SPRINT 2 (15 dias)
+  Requisitos Mínimos para Entrega
+================================================================
+
+DESCRIÇÃO
+---------
+Continuação do projeto da Sprint 1. O objetivo desta sprint é
+aprofundar o sistema já existente com, busca, paginação e autenticação básica.
+
+
+----------------------------------------------------------------
+REQUISITO 1 — RELACIONAMENTO ENTRE ENTIDADES
+----------------------------------------------------------------
+
+Se o seu grupo já implementou Chave estrageira (FK) e join na Sprint 1, pule para
+o Requisito 2.
+
+As duas entidades do seu projeto devem estar realmente ligadas
+no banco de dados. Uma entidade pertence à outra por chave
+estrangeira (FK).
+
+Exemplos:
+  - Produto tem um campo categoria_id -> FK para Categoria
+  - Pedido tem um campo cliente_id   -> FK para Cliente
+  - Aluno tem um campo turma_id      -> FK para Turma
+
+BACKEND:
+  1. A tabela "filha" deve ter a coluna FK devidamente criada.
+
+  2. A rota GET /entidade-filha deve retornar os dados
+     relacionados embutidos, não apenas o ID:
+
+     Errado:   { "id": 1, "nome": "Camiseta", "categoria_id": 3 }
+
+     Certo:    { "id": 1, "nome": "Camiseta", "categoria": { "id": 3, "nome": "Roupas" } }
+
+  3. A rota POST na entidade-filha deve:
+     - Aceitar o ID da entidade mãe no corpo da requisição.
+     - Retornar 404 se o ID informado não existir.
+
+FRONTEND:
+  1. O formulário de criação/edição da entidade filha deve ter
+     um <select> populado com os registros da entidade mãe.
+
+  2. A listagem deve exibir o nome da entidade mãe, não o ID.
+
+
+----------------------------------------------------------------
+REQUISITO 2 — BUSCA E FILTRAGEM
+----------------------------------------------------------------
+
+Para ao menos UMA das entidades, implementar busca por campo
+via query parameter.
+
+BACKEND:
+  - GET /entidade?campo=valor
+    -> retorna apenas os registros que contenham o valor
+
+  Exemplos:
+    GET /produtos?nome=cami    -> retorna produtos com "cami" no nome -> %%
+    GET /clientes?email=gmail  -> retorna clientes com "gmail" no email
+
+  - Se o parâmetro não for enviado, o comportamento deve ser
+    igual ao GET sem filtro (retorna todos).
+
+FRONTEND:
+  - Adicionar um campo de texto na página de listagem.
+  - A busca deve chamar a rota do backend.
+  - Ao limpar o campo, a lista completa deve ser restaurada.
+
+
+----------------------------------------------------------------
+REQUISITO 3 — PAGINAÇÃO
+----------------------------------------------------------------
+
+Para ao menos UMA das entidades, implementar paginação no backend 
+e navegação no frontend.
+
+BACKEND:
+  - GET /entidade?page=1&limit=10
+    -> retorna os registros da página solicitada
+
+  A resposta deve incluir metadados de paginação:
+
+    {
+      "data": [ ... ],
+      "total": 47,
+      "page": 1,
+      "limit": 10,
+      "pages": 5
+    }
+
+  - Busca (requisito 2) e paginação podem funcionar juntas:
+    GET /entidade?nome=abc&page=2&limit=5
+
+FRONTEND:
+  - Exibir botões ou links "Anterior" e "Próximo".
+  - Mostrar a informação "Página X de Y".
+  - Botão "Anterior" desativado na primeira página.
+  - Botão "Próximo" desativado na última página.
+  - No campo de busca (Requisito 2), filtro e paginação
+    devem funcionar juntos sem conflito.
+
+
+----------------------------------------------------------------
+REQUISITO 4 — AUTENTICAÇÃO BÁSICA
+----------------------------------------------------------------
+
+Implementar um sistema de login simples com token JWT.
+(Estude sobre isso)
+
+FLUXO ESPERADO:
+
+  1. Usuário acessa login.html e preenche email + senha.
+
+  2. Frontend envia POST /login com as credenciais.
+
+  3. Backend valida as credenciais e retorna um token:
+       { "access_token": "eyJ...", "token_type": "bearer" }
+     Ou retorna status 401 se as credenciais forem inválidas.
+
+  4. Frontend armazena o token no localStorage.
+
+  5. Nas próximas requisições de escrita (POST, PUT, DELETE),
+     o frontend envia o token no cabeçalho:
+       Authorization: Bearer eyJ...
+
+  6. O backend valida o token antes de executar a operação.
+     Se ausente ou inválido, retorna 401.
+
+  7. Ao clicar em "Sair", o frontend remove o token do
+     localStorage e redireciona para login.html.
+
+BACKEND:
+  1. Criar ao menos um usuário fixo no banco (pode ser via
+     script ou SQL ou seed; não precisa de cadastro de usuário).
+
+  2. Rota POST /login que valida email + senha e retorna JWT.
+
+  3. Rotas protegidas: POST, PUT e DELETE de qualquer entidade
+     devem exigir token válido.
+
+  4. Rotas públicas: GET (listagem e busca por ID) podem
+     continuar sem autenticação.
+
+  5. Retornar 401 com mensagem clara quando o token estiver
+     ausente, expirado ou inválido.
+
+FRONTEND:
+  1. Página login.html com formulário de email e senha.
+
+  2. Exibir mensagem de erro se o login falhar (não apenas
+     limpar o formulário em silêncio).
+
+  3. Se o usuário tentar acessar uma página protegida sem
+     estar logado, redirecionar para login.html.
+
+  4. Exibir o nome ou email do usuário logado em algum lugar
+     visível (navbar, cabeçalho da página).
+
+  5. Botão ou link "Sair" acessível em todas as páginas.
+
+
+----------------------------------------------------------------
+CRITÉRIOS DE AVALIAÇÃO — SPRINT 2
+----------------------------------------------------------------
+
+Relacionamento:
+  [ ] Tabela filha possui FK para a tabela mãe
+  [ ] GET retorna dados relacionados embutidos (não só o ID)
+  [ ] POST valida se o ID da entidade mãe existe (404 se não)
+  [ ] Formulário usa <select> populado dinamicamente via backend
+
+Busca:
+  [ ] GET /entidade?campo=valor filtra corretamente
+  [ ] Busca parcial e case-insensitive
+  [ ] Sem parâmetro, retorna todos os registros
+  [ ] Frontend chama o backend para buscar (não filtra no JS)
+
+Paginação:
+  [ ] GET /entidade?page=X&limit=Y retorna a página correta
+  [ ] Resposta inclui total, page, limit e pages
+  [ ] Busca e paginação funcionam combinadas
+  [ ] Frontend exibe "Página X de Y"
+  [ ] Botões Anterior/Próximo funcionam e são desativados
+      nos extremos
+
+Autenticação:
+  [ ] POST /login retorna token JWT com credenciais válidas
+  [ ] POST /login retorna 401 com credenciais inválidas
+  [ ] Rotas POST, PUT e DELETE exigem token válido
+  [ ] Sem token ou token inválido retorna 401
+  [ ] Frontend armazena token no localStorage após login
+  [ ] Frontend envia token no cabeçalho Authorization
+  [ ] Página protegida sem token redireciona para login.html
+  [ ] Botão "Sair" remove o token e redireciona
+
+Git (mesmos critérios da Sprint 1, mantidos):
+  [ ] Nenhum commit direto na branch main
+  [ ] Ao menos um Pull Request por integrante
+  [ ] Pull Requests revisados pelo outro integrante
+
+
+----------------------------------------------------------------
+ENTREGA
+----------------------------------------------------------------
+
+  - Repositório público no GitHub (mesmo da Sprint 1, evoluído)
+  - Demonstração funcionando (backend + frontend rodando juntos)
+  - Prazo: 15 dias
+
+
+----------------------------------------------------------------
+OBSERVAÇÕES
+----------------------------------------------------------------
+
+  - Grupos que já tinham o Requisito 1 implementado na Sprint 1
+    não precisam refazê-lo. Basta garantir que atende o que está
+    descrito acima e seguir para o Requisito 2.
+
+  - Para o JWT no Python + FastAPI, a biblioteca recomendada é
+    python-jose ou PyJWT.
+
+  - O usuário de teste (email + senha) deve estar documentado
+    no README para que o professor consiga fazer login.
+
+================================================================
